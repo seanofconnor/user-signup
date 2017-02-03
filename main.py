@@ -15,6 +15,7 @@
 # limitations under the License.
 #
 import webapp2
+import cgi
 import re
 
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
@@ -29,51 +30,54 @@ EMAIL_RE = re.compile(r"^[\S]+@[\S]+.[\S]+$")
 def valid_email(email):
     return not email or EMAIL_RE.match(email)
 
-one = """
+template = """
 <!DOCTYPE html>
-<html>
-<head>
-    <title>User Signup</title>
-</head>
-<body>
-    <h1>Signup</h1>
-<form method='post'>
-    <label>
-    Username
-    <input type="text" name="username"/>
-    </label>
-"""
-two = """
-<br>
-    <label>
-    Password
-    <input type="password" name="password"/>
-    </label>
-"""
-three = """
-<br>
-    <label>
-    Verify Password
-    <input type="password" name="verify"/>
-    </label>
-"""
-four = """
-<br>
-    <label>
-    Email (optional)
-    <input type="text" name="email"/>
-    </label>
-"""
 
-five = """
-<br>
-    <input type='submit'>
-</form>
-</body>
+<html>
+    <head>
+    </head>
+    <body>
+    <h1>Signup</h1>
+        <form method="post">
+            <table>
+                <tr>
+                    <td><label for="username">Username</label></td>
+                    <td>
+                        <input name="username" type="text" value="{username}" required>
+                        <span class="error">{error_username}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="password">Password</label></td>
+                    <td>
+                        <input name="password" type="password" required>
+                        <span class="error">{error_password}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="verify">Verify Password</label></td>
+                    <td>
+                        <input name="verify" type="password" required>
+                        <span class="error">{error_verify}</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td><label for="email">Email (optional)</label></td>
+                    <td>
+                        <input name="email" type="email" value="{email}">
+                        <span class="error">{error_email}</span>
+                    </td>
+                </tr>
+            </table>
+            <input type="submit">
+        </form>
+    </body>
 </html>
 """
 
-signup = one + two + three + four + five
+def renderPage(username='', error_username='', error_password='', error_verify='', email='', error_email=''):
+    page = template.format(username = username, error_username = error_username, error_password = error_password, error_verify = error_verify, email = email, error_email = error_email)
+    return page
 
 
 class MainHandler(webapp2.RequestHandler):
@@ -82,7 +86,7 @@ class MainHandler(webapp2.RequestHandler):
 
 class Signup(webapp2.RequestHandler):
     def get(self):
-        self.response.write(signup)
+        self.response.write(renderPage())
 
     def post(self):
         username = self.request.get('username')
@@ -90,10 +94,6 @@ class Signup(webapp2.RequestHandler):
         verify = self.request.get('verify')
         email = self.request.get('email')
         have_error = False
-        error_username = ""
-        error_password = ""
-        error_verify = ""
-        error_email = ""
 
         if not valid_username(username):
             error_username = "That's not a valid username."
@@ -112,7 +112,7 @@ class Signup(webapp2.RequestHandler):
             have_error = True
 
         if have_error:
-            self.response.write(one + error_username + two + error_password + three + error_verify + four + error_email + five)
+            self.response.write(renderPage(page))
         else:
             self.redirect('/welcome')
 
