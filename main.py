@@ -17,7 +17,19 @@
 import webapp2
 import re
 
-signup = """
+USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+def valid_username(username):
+    return username and USER_RE.match(username)
+
+PASS_RE = re.compile(r"^.{3,20}$")
+def valid_password(password):
+    return password and PASS_RE.match(password)
+
+EMAIL_RE = re.compile(r"^[\S]+@[\S]+.[\S]+$")
+def valid_email(email):
+    return not email or EMAIL_RE.match(email)
+
+one = """
 <!DOCTYPE html>
 <html>
 <head>
@@ -30,21 +42,30 @@ signup = """
     Username
     <input type="text" name="username"/>
     </label>
+"""
+two = """
 <br>
     <label>
     Password
     <input type="password" name="password"/>
     </label>
+"""
+three = """
 <br>
     <label>
     Verify Password
     <input type="password" name="verify"/>
     </label>
+"""
+four = """
 <br>
     <label>
     Email (optional)
     <input type="text" name="email"/>
     </label>
+"""
+
+five = """
 <br>
     <input type='submit'>
 </form>
@@ -52,17 +73,8 @@ signup = """
 </html>
 """
 
-USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
-def valid_username(username):
-    return username and USER_RE.match(username)
+signup = one + two + three + four + five
 
-PASS_RE = re.compile(r"^.{3,20}$")
-def valid_password(password):
-    return password and PASS_RE.match(password)
-
-EMAIL_RE = re.compile(r"^[\S]+@[\S]+.[\S]+$")
-def valid_email(email):
-    return not email or EMAIL_RE.match(email)
 
 class MainHandler(webapp2.RequestHandler):
     def get(self):
@@ -78,30 +90,29 @@ class Signup(webapp2.RequestHandler):
         verify = self.request.get('verify')
         email = self.request.get('email')
         have_error = False
-        error = ""
+        error_username = ""
+        error_password = ""
+        error_verify = ""
+        error_email = ""
 
         if not valid_username(username):
             error_username = "That's not a valid username."
-            error = error + error_username
             have_error = True
 
         if not valid_password(password):
             error_password = " That wasn't a valid password."
-            error = error + error_password
             have_error = True
 
         elif password != verify:
             error_verify = " Your passwords don't match."
-            error = error + error_verify
             have_error = True
 
         if not valid_email(email):
             error_email = " That's not a valid email."
-            error = error + error_email
             have_error = True
 
         if have_error:
-            self.response.write(signup + error)
+            self.response.write(one + error_username + two + error_password + three + error_verify + four + error_email + five)
         else:
             self.redirect('/welcome')
 
