@@ -123,13 +123,14 @@ class Signup(webapp2.RequestHandler):
         if have_error:
             self.renderPage(username, error_username, error_password, error_verify, email, error_email)
         else:
-            self.redirect('/welcome')
+            self.redirect('/welcome?username=' + username)
 
 
 class Welcome(webapp2.RequestHandler):
     def get(self):
         username = self.request.get('username')
-        self.response.write("Welcome" + username)
+        if valid_username(username):
+            self.response.write("Welcome, " + username)
 
 
 class MainHandler(webapp2.RequestHandler):
