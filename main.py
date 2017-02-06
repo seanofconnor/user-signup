@@ -35,6 +35,11 @@ template = """
 
 <html>
     <head>
+        <style>
+            .error {
+                color: red;
+            }
+        </style>
     </head>
     <body>
     <h1>Signup</h1>
@@ -43,29 +48,29 @@ template = """
                 <tr>
                     <td><label for="username">Username</label></td>
                     <td>
-                        <input name="username" type="text" value="{username}" required>
-                        <span class="error">{error_username}</span>
+                        <input name="username" type="text" value="%(username)s" required>
+                        <span class="error">%(error_username)s</span>
                     </td>
                 </tr>
                 <tr>
                     <td><label for="password">Password</label></td>
                     <td>
                         <input name="password" type="password" required>
-                        <span class="error">{error_password}</span>
+                        <span class="error">%(error_password)s</span>
                     </td>
                 </tr>
                 <tr>
                     <td><label for="verify">Verify Password</label></td>
                     <td>
                         <input name="verify" type="password" required>
-                        <span class="error">{error_verify}</span>
+                        <span class="error">%(error_verify)s</span>
                     </td>
                 </tr>
                 <tr>
                     <td><label for="email">Email (optional)</label></td>
                     <td>
-                        <input name="email" type="email" value="{email}">
-                        <span class="error">{error_email}</span>
+                        <input name="email" type="email" value="%(email)s">
+                        <span class="error">%(error_email)s</span>
                     </td>
                 </tr>
             </table>
@@ -75,25 +80,29 @@ template = """
 </html>
 """
 
-def renderPage(username='', error_username='', error_password='', error_verify='', email='', error_email=''):
-    page = template.format(username = username, error_username = error_username, error_password = error_password, error_verify = error_verify, email = email, error_email = error_email)
-    return page
-
-
-class MainHandler(webapp2.RequestHandler):
-    def get(self):
-        self.redirect('/signup')
 
 class Signup(webapp2.RequestHandler):
+    def renderPage(self, username="", error_username="", error_password="", error_verify="", email="", error_email=""):
+        self.response.out.write(template % {"username": cgi.escape(username),
+                                        "error_username": cgi.escape(error_username),
+                                        "error_password": cgi.escape(error_password),
+                                        "error_verify": cgi.escape(error_verify),
+                                        "email": cgi.escape(email),
+                                        "error_email": cgi.escape(error_email)})
+
     def get(self):
-        self.response.write(renderPage())
+        self.renderPage()
 
     def post(self):
+        have_error = False
         username = self.request.get('username')
         password = self.request.get('password')
         verify = self.request.get('verify')
         email = self.request.get('email')
-        have_error = False
+        error_username=""
+        error_password=""
+        error_verify=""
+        error_email=""
 
         if not valid_username(username):
             error_username = "That's not a valid username."
@@ -112,7 +121,7 @@ class Signup(webapp2.RequestHandler):
             have_error = True
 
         if have_error:
-            self.response.write(renderPage(page))
+            self.renderPage(username, error_username, error_password, error_verify, email, error_email)
         else:
             self.redirect('/welcome')
 
@@ -122,6 +131,10 @@ class Welcome(webapp2.RequestHandler):
         username = self.request.get('username')
         self.response.write("Welcome" + username)
 
+
+class MainHandler(webapp2.RequestHandler):
+    def get(self):
+        self.redirect('/signup')
 
 app = webapp2.WSGIApplication([
     ('/', MainHandler),
