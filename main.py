@@ -109,15 +109,15 @@ class Signup(webapp2.RequestHandler):
             have_error = True
 
         if not valid_password(password):
-            error_password = " That wasn't a valid password."
+            error_password = "That wasn't a valid password."
             have_error = True
 
         elif password != verify:
-            error_verify = " Your passwords don't match."
+            error_verify = "Your passwords don't match."
             have_error = True
 
         if not valid_email(email):
-            error_email = " That's not a valid email."
+            error_email = "That's not a valid email."
             have_error = True
 
         if have_error:
@@ -131,6 +131,8 @@ class Welcome(webapp2.RequestHandler):
         username = self.request.get('username')
         if valid_username(username):
             self.response.write("Welcome, " + username)
+        else:
+            self.redirect('/signup')
 
 
 class MainHandler(webapp2.RequestHandler):
